@@ -188,3 +188,162 @@ v := 1
 incr(&v)              // side effect: v is now 2
 fmt.Println(incr(&v)) // "3" (and v is 3)
 ```
+
+---
+
+## new函數
+
+另一個創建變量的方法是調用用內建的new函數。表達式new(T)將創建一個T類型的匿名變量，初始化爲T類型的零值，然後返迴變量地址，返迴的指針類型爲*T。
+
+```
+p := new(int) // p, *int  類型, 指向匿名的 int 變量
+fmt.Println(*p) // "0"
+*p = 2 // 設置 int 匿名變量的值爲 2
+fmt.Println(*p) // "2"
+```
+new函數類似是一種語法醣，而不是一個新的基礎概念。
+下面的兩個newInt函數有着相同的行爲：
+
+```
+func newInt() *int {                func newInt() *int {
+    return new(int)                     var dummy int
+}                                       return &dummy
+                                    }
+```
+
+每次調用new函數都是返迴一個新的變量的地址，因此下面兩個地址是不同的：
+
+```
+p := new(int)
+q := new(int)
+fmt.Println(p == q) // "false"
+```
+---
+
+## 變量的生命週期
+
+變量的生命週期指的是在程序運行期間變量有效存在的時間間隔。
+對於在包一級聲明的變量來説，它們的生命週期和整個程序的運行週期是一致的
+
+```
+for t := 0.0; t < cycles*2*math.Pi; t += res {
+    x := math.Sin(t)
+    y := math.Sin(t*freq + phase)
+    img.SetColorIndex(size+int(x*size+0.5), size+int(y*size+0.5),
+        blackIndex)
+}
+```
+
+---
+
+
+## 賦值
+
+使用賦值語句可以更新一個變量的值，最簡單的賦值語句是將要被賦值的變量放在=的左邊，新值的表達式放在=的右邊。
+
+```
+x = 1                       // 命令變量的賦值
+*p = true                   // 通過指針間接賦值
+person.name = "bob"         // 結構體字段賦值
+count[x] = count[x] * scale // 數組、slice或map的元素賦值
+```
+
+特定的二元算術運算符和賦值語句的複合操作有一個簡潔形式
+
+```
+count[x] *= scale
+
+v := 1 
+v++    // 等價方式 v = v + 1；v 變成 2 
+v--    // 等價方式 v = v - 1；v 變成 1
+```
+
+---
+
+## 元組賦值
+
+元組賦值是另一種形式的賦值語句，它允許同時更新多個變量的值
+在賦值之前，賦值語句右邊的所有表達式將會先進行求值，然後再統一更新左邊對應變量的值。
+
+```
+x, y = y, x
+
+a[i], a[j] = a[j], a[i]
+```
+
+計算兩個整數值的的最大公約數（GCD）
+
+```
+func gcd(x, y int) int {
+    for y != 0 {
+        x, y = y, x%y
+    }
+    return x
+}
+```
+
+計算斐波納契數列（Fibonacci）的第N個數
+
+```
+func fib(n int) int {
+    x, y := 0, 1
+    for i := 0; i < n; i++ {
+        x, y = y, x+y
+    }
+    return x
+}
+```
+元組賦值也可以使一繫列瑣碎賦值更加緊湊（譯註: 特别是在for循環的初始化部分）
+
+```
+i, j, k = 2, 3, 5
+```
+表達式太複雜的話，應該盡量避免過度使用元組賦值
+
+有些表達式會産生多個值，比如調用一個有多個返迴值的函數。當這樣一個函數調用出現在元組賦值右邊的表達式中時（譯註：右邊不能再有其它表達式），左邊變量的數目必須和右邊一致。
+
+```
+f, err = os.Open("foo.txt") // function call returns two values
+```
+如果map査找（§4.3）、類型斷言（§7.10）或通道接收（§8.4.2）出現在賦值語句的右邊，它們都可能會産生兩個結果，有一個額外的布爾結果表示操作是否成功：
+
+```
+v, ok = m[key]             // map lookup
+v, ok = x.(T)              // type assertion
+v, ok = <-ch               // channel receive
+```
+map査找（§4.3）、類型斷言（§7.10）或通道接收（§8.4.2）出現在賦值語句的右邊時，併不一定是産生兩個結果，也可能隻産生一個結果。對於值産生一個結果的情形，map査找失敗時會返迴零值，類型斷言失敗時會發送運行時panic異常，通道接收失敗時會返迴零值（阻塞不算是失敗）
+
+```
+v = m[key]                // map査找，失敗時返迴零值
+v = x.(T)                 // type斷言，失敗時panic異常
+v = <-ch                  // 管道接收，失敗時返迴零值（阻塞不算是失敗）
+
+_, ok = m[key]            // map返迴2個值
+_, ok = mm[""], false     // map返迴1個值
+_ = mm[""]                // map返迴1個值
+```
+和變量聲明一樣，我們可以用下劃線空白標識符_來丟棄不需要的值。
+
+```
+_, err = io.Copy(dst, src) // 丟棄字節數
+_, ok = x.(T)              // 隻檢測類型，忽略具體值
+```
+
+---
+##  可賦值性
+
+賦值語句是顯式的賦值形式，但是程序中還有很多地方會發生隱式的賦值行爲
+
+```
+medals := []string{"gold", "silver", "bronze"}
+```
+隱式地對slice的每個元素進行賦值操作，類似這樣寫的行爲：
+
+```
+medals[0] = "gold" 
+medals[1] = "silver" 
+medals[2] = "bronze"
+```
+
+
