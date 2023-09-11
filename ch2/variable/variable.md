@@ -346,4 +346,72 @@ medals[1] = "silver"
 medals[2] = "bronze"
 ```
 
+---
 
+## 類型
+
+1. **變量**或**表達式**的類型定義了其在內存中的存儲特徵，例如大小和表示方式。
+2. 這些類型還確定了支持的操作符和相關的方法集。
+3. 在程式中，相同的內部結構的變量可能表示完全不同的概念。如：
+4. int：可以是迭代索引、時間戳、文件描述符、月份等。
+5. float64：可以是速度或溫度。
+6. 字符串：可以是密碼或顔色名稱。
+7. 通過類型聲明語句，可以創建具有相同底層結構但名稱不同的新類型。
+8. 這種新命名的類型允許分隔不同的概念，即使底層結構相同，它們也是不兼容的。
+
+```
+type 類型名字 底層類型
+```
+爲了説明類型聲明，我們將不同溫度單位分别定義爲不同的類型：
+
+```
+package tempconv
+
+import "fmt"
+
+type Celsius float64    // 攝氏溫度
+type Fahrenheit float64 // 華氏溫度
+
+const (
+    AbsoluteZeroC Celsius = -273.15 // 絶對零度
+    FreezingC     Celsius = 0       // 結冰點溫度
+    BoilingC      Celsius = 100     // 沸水溫度
+)
+
+func CToF(c Celsius) Fahrenheit { return Fahrenheit(c*9/5 + 32) }
+
+func FToC(f Fahrenheit) Celsius { return Celsius((f - 32) * 5 / 9) }
+```
+底層數據類型決定了內部結構和表達方式，也決定是否可以像底層類型一樣對內置運算符的支持。
+
+這意味着，Celsius和Fahrenheit類型的算術運算行爲和底層的float64類型是一樣的，正如我們所期望的那樣。
+
+```
+fmt.Printf("%g\n", BoilingC-FreezingC) // "100" °C
+boilingF := CToF(BoilingC)
+fmt.Printf("%g\n", boilingF-CToF(FreezingC)) // "180" °F
+fmt.Printf("%g\n", boilingF-FreezingC)       // compile error: type mismatch
+```
+比較運算符==和<也可以用來比較一個命名類型的變量和另一個有相同類型的變量，或有着相同底層類型的未命名類型的值之間做比較。
+但是如果兩個值有着不同的類型，則不能直接進行比較：
+
+```
+var c Celsius
+var f Fahrenheit
+fmt.Println(c == 0)          // "true"
+fmt.Println(f >= 0)          // "true"
+fmt.Println(c == f)          // compile error: type mismatch
+fmt.Println(c == Celsius(f)) // "true"!
+```
+
+註意最後那個語句。盡管看起來想函數調用，但是Celsius(f)是類型轉換操作，它併不會改變值，僅僅是改變值的類型而已。測試爲眞的原因是因爲c和g都是零值。
+
+一個命名的類型可以提供書寫方便，特别是可以避免一遍又一遍地書寫複雜類型（譯註：例如用匿名的結構體定義變量）。雖然對於像float64這種簡單的底層類型沒有簡潔很多，但是如果是複雜的類型將會簡潔很多，特别是我們卽將討論的結構體類型。
+
+命名類型還可以爲該類型的值定義新的行爲。這些行爲表示爲一組關聯到該類型的函數集合，我們稱爲類型的方法集。我們將在第六章中討論方法的細節，這里值説寫簡單用法。
+
+下面的聲明語句，Celsius類型的參數c出現在了函數名的前面，表示聲明的是Celsius類型的一個叫名叫String的方法，該方法返迴該類型對象c帶着°C溫度單位的字符串：
+
+```
+func (c Celsius) String() string { return fmt.Sprintf("%g°C", c) }
+```
