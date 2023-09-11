@@ -1,0 +1,12 @@
+go 1.21.0
+
+use (
+	./ch1/fetch
+	./ch1/fetchAll
+	./ch1/lissajous
+	./ch2/add
+	./ch2/boiling
+	./ch2/echo4
+	./ch2/ftoc
+	./ch2/tempconv0
+)
