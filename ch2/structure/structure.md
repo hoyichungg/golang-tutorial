@@ -415,3 +415,60 @@ fmt.Println(c == Celsius(f)) // "true"!
 ```
 func (c Celsius) String() string { return fmt.Sprintf("%g°C", c) }
 ```
+
+---
+## 作用域
+
+1. 聲明與名稱：聲明語句將程序中的實體（如函數或變量）與一個名稱關聯。
+
+2. 作用域：聲明語句的作用域是名稱在源碼中有效使用的區域，且是編譯時的概念。
+
+3. 生命週期：變量的生命週期是其在運行時的有效時間，且是運行時的概念。
+
+4. 語法塊：由花括弧包含的語句。內部聲明的名稱無法被外部語法塊訪問。
+
+5. 詞法域的種類：包括全局語法塊、包語法塊、各種語句的語法塊（例如for、if、switch等）和顯式的語法塊。
+
+6. 控製流標號：如break、continue或goto後面的標號具有函數級的作用域。
+
+7. 名稱的重複：在不同的詞法域內可以有相同的名稱。例如，局部變量可以和包級變量同名。
+
+8. 名稱的查找：當編譯器遇到名稱引用時，它從最內層的詞法域開始查找，直到全局作用域。如果內部和外部的塊都有相同的名稱，內部的聲明會被首先找到且屏蔽外部的同名聲明。
+
+```
+func f() {}
+
+var g = "g"
+
+func main() {
+    f := "f"
+    fmt.Println(f) // "f"; local var f shadows package-level func f
+    fmt.Println(g) // "g"; package-level var
+    fmt.Println(h) // compile error: undefined: h
+}
+```
+
+許多語法塊是if或for等控製流語句構造的。
+下面的代碼有三個不同的變量x，因爲它們是定義在不同的詞法域
+
+```
+func main() {
+    x := "hello!"
+    for i := 0; i < len(x); i++ {
+        x := x[i]
+        if x != '!' {
+            x := x + 'A' - 'a'
+            fmt.Printf("%c", x) // "HELLO" (one letter per iteration)
+        }
+    }
+}
+
+
+func main() {
+    x := "hello"
+    for _, x := range x {
+        x := x + 'A' - 'a'
+        fmt.Printf("%c", x) // "HELLO" (one letter per iteration)
+    }
+}
+```
