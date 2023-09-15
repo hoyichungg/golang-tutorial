@@ -47,4 +47,4 @@ func btoi(b bool) int {
 // itob reports whether i is non-zero.
 func itob(i int) bool { return i != 0 }
 ```
-
+[Slice]https://wizardforcel.gitbooks.io/gopl-zh/content/images/ch4-01.png'
